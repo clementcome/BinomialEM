@@ -22,13 +22,14 @@ class BinomialEM:
         self.lambd_ = None
         self.p_ = None
 
+    def f(self, i: int):
+        return (
+            binom(self.n_estimation_, i)
+            * self.p_ ** i
+            * (1 - self.p_) ** (self.n_estimation_ - i)
+        )
+
     def fit(self, S: np.ndarray, initial_p: np.ndarray = None):
-        def f(i: int):
-            return (
-                binom(self.n_estimation_, i)
-                * self.p_ ** i
-                * (1 - self.p_) ** (self.n_estimation_ - i)
-            )
 
         self.lambd_ = np.repeat(1 / self.n_components_, self.n_components_)
         if initial_p is not None:
@@ -42,7 +43,7 @@ class BinomialEM:
 
         for t in tqdm(range(self.max_iter_), disable=self.hide_pbar_):
             # E-step
-            P = np.apply_along_axis(f, 1, S)
+            P = np.apply_along_axis(self.f, 1, S)
 
             # M-step
             self.lambd_ = np.sum(P, axis=0) / n_sample
@@ -52,6 +53,6 @@ class BinomialEM:
 
     def predict(self, S: np.ndarray):
         S = S.reshape((-1, 1))
-        P = np.apply_along_axis(f, 1, S)
+        P = np.apply_along_axis(self.f, 1, S)
         labels = np.apply_along_axis(np.argmax, 1, P)
         return labels
