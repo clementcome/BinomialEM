@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import binom
 from tqdm import tqdm
 import plotly.graph_objects as go
+import scipy.stats as stats
 
 
 def plot_binomial_mixture(p_values, proportions=None, S=None):
