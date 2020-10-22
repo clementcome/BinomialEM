@@ -1,6 +1,27 @@
 import numpy as np
 from scipy.special import binom
 from tqdm import tqdm
+import plotly.graph_objects as go
+
+
+def plot_binomial_mixture(p_values, proportions=None, S=None):
+    if proportions is None:
+        proportions = np.ones_like(p_values)
+    fig = go.Figure()
+    for p, prop in zip(p_values, proportions):
+        x = np.arange(
+            stats.binom.ppf(0.01, n_estimation, p),
+            stats.binom.ppf(0.99, n_estimation, p),
+        )
+        fig.add_scatter(
+            x=x,
+            y=prop * stats.binom.pmf(x, n_estimation, p),
+            mode="lines",
+            name=f"p={p:.3f}",
+        )
+    if S is not None:
+        fig.add_histogram(x=S, nbinsx=30, histnorm="probability density")
+    fig.show()
 
 
 class BinomialEM:
