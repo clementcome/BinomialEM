@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import scipy.stats as stats
 
 
-def plot_binomial_mixture(p_values, proportions=None, S=None):
+def plot_binomial_mixture(p_values, proportions=None, S=None, n_estimation=100):
     if proportions is None:
         proportions = np.ones_like(p_values)
     fig = go.Figure()
@@ -61,11 +61,12 @@ class BinomialEM:
             max_p = np.max(S / self.n_estimation_)
             self.p_ = np.linspace(min_p, max_p, self.n_components_)
         S = S.reshape((-1, 1))
-        n_sample = S.shape[1]
+        n_sample = S.shape[0]
 
         for t in tqdm(range(self.max_iter_), disable=self.hide_pbar_):
             # E-step
-            P = np.apply_along_axis(self.f, 1, S)
+            P = self.lambd_ * np.apply_along_axis(self.f, 1, S)
+            P = P / np.sum(P, axis=1).reshape(-1, 1)
 
             # M-step
             self.lambd_ = np.sum(P, axis=0) / n_sample
@@ -75,6 +76,7 @@ class BinomialEM:
 
     def predict(self, S: np.ndarray):
         S = S.reshape((-1, 1))
-        P = np.apply_along_axis(self.f, 1, S)
+        P = self.lambd_ * np.apply_along_axis(self.f, 1, S)
+        P = P / np.sum(P, axis=1).reshape(-1, 1)
         labels = np.apply_along_axis(np.argmax, 1, P)
         return labels
