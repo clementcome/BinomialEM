@@ -88,7 +88,8 @@ class BinomialEM:
 
         for t in tqdm(range(self.max_iter_), disable=self.hide_pbar_):
             # E-step
-            P = self.lambd_ * np.apply_along_axis(self.f, 1, S)
+            self.prob_ = np.apply_along_axis(self.f, 1, S)
+            P = self.lambd_ * self.prob_
             P = P / np.sum(P, axis=1).reshape(-1, 1)
 
             # M-step
@@ -96,6 +97,7 @@ class BinomialEM:
             self.p_ = np.sum(P * S, axis=0) / (
                 n_sample * self.lambd_ * self.n_estimation_
             )
+        self.labels_ = np.apply_along_axis(np.argmax, 1, P)
 
     def predict(self, S: np.ndarray):
         S = S.reshape((-1, 1))
